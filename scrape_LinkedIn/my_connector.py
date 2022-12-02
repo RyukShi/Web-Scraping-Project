@@ -7,7 +7,7 @@ class MyConnector:
         host: str = 'localhost',
         user: str = 'root',
         password: str = 'password',
-        database: str = 'WebScrapingProject'
+        database: str = 'web_scraping_project'
     ):
         self.host = host
         self.user = user
@@ -44,10 +44,10 @@ class MyConnector:
         """ Insert many data in jobs table """
         if self.connection:
             insert_request = """
-            INSERT INTO jobs (title, description, company_name,
-                              company_url, location, criteria,
-                              jobs_offer_url)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO jobs_offers (title, description, company_name,
+                                    company_url, location, criteria,
+                                    jobs_offer_url, posted_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """
             # create cursor
             cursor = self.connection.cursor()

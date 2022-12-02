@@ -17,3 +17,8 @@ def join_path(path: str, folder: str, filename: str) -> str:
 def is_exists(path: str) -> bool:
     """ Return True if file exists, False otherwise """
     return os.path.isfile(path)
+
+
+def get_size(path: str) -> int:
+    """ Return the size of a file """
+    return os.path.getsize(path)

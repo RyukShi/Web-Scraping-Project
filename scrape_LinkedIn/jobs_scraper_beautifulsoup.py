@@ -3,8 +3,9 @@ from requests import get
 from os import getcwd
 from bs4 import BeautifulSoup
 from random import random
-from utils import chill, join_path, is_exists
+from utils import chill, join_path, is_exists, get_size
 from urllib.parse import urlencode, quote
+from json import dumps
 from my_logger import MyLogger
 from my_connector import MyConnector
 
@@ -35,13 +36,20 @@ class JobsScraperBeautifulSoup:
             log_name="JobsScraperBeautifulSoup",
         )
 
+    def is_valid_file(self) -> bool:
+        return is_exists(self.SAVE_URLS_PATH_FILE) and get_size(self.SAVE_URLS_PATH_FILE) > 0
+
     def run(self):
         """ Run the scraper """
-        if (is_exists(self.SAVE_URLS_PATH_FILE)):
+        self.logger.info("Start scraping")
+
+        if (self.is_valid_file()):
             self.load_jobs_urls()
             self.logger.info("Jobs url loaded from save_urls.txt file")
         else:
-            self.scraping_jobs()
+            self.scraping_jobs_url()
+        self.scraping_jobs_data()
+        self.logger.info("Scraping done")
 
     def load_jobs_urls(self):
         with open(self.SAVE_URLS_PATH_FILE, 'r', encoding='utf-8') as txt_file:
@@ -64,6 +72,7 @@ class JobsScraperBeautifulSoup:
             return None
 
     def get_jobs_url(self, url: str) -> list:
+        """ Gets the first 25 jobs at most from search url """
         # get soup object
         soup = self.get_soup(url)
 
@@ -87,7 +96,7 @@ class JobsScraperBeautifulSoup:
 
         title = soup.find('h1', class_='top-card-layout__title')
         if title != None:
-            title = title.get_text()
+            title = title.get_text(strip=True)
 
         description = soup.find('div', class_='show-more-less-html__markup')
         if description != None:
@@ -106,19 +115,33 @@ class JobsScraperBeautifulSoup:
             'span', class_='topcard__flavor topcard__flavor--bullet')
         if location != None:
             location = location.get_text(strip=True)
-        # TODO criteria
+
         criteria = {}
+        criteria_list = soup.find_all(
+            'li', class_='description__job-criteria-item')
+        if criteria_list != None:
+            for c in criteria_list:
+                key = c.find('h3')
+                value = c.find('span')
+                if key and value:
+                    criteria[key.get_text(strip=True)] = value.get_text(
+                        strip=True)
+
+        posted_at = soup.find(
+            'span', class_='posted-time-ago__text topcard__flavor--metadata')
+        if posted_at != None:
+            posted_at = posted_at.get_text(strip=True)
 
         return (
             title, description, company_name,
-            company_url, location, criteria, url
+            company_url, location, dumps(criteria),
+            url, posted_at
         )
 
-    def scraping_jobs(self):
-        count = 1
-        length = len(self.COUNTRIES)
-
-        self.logger.info("Start scraping")
+    def scraping_jobs_url(self):
+        if self.verbose:
+            count = 1
+            length = len(self.COUNTRIES)
 
         # for loop with random shuffle
         for country in sorted(self.COUNTRIES, key=lambda _: random()):
@@ -147,12 +170,63 @@ class JobsScraperBeautifulSoup:
         if len(self.missed_data) > 0:
             self.logger.info(f"{len(self.missed_data)} countries missed")
 
+    def scraping_jobs_data(self):
         connector = MyConnector()
 
         # try to connect to the database
         if not connector.connect_to_db():
             self.logger.error("Can't connect to the database")
-            # save the urls in save_urls.txt file
-            self.save_urls()
+            # save the jobs url in save_urls.txt file
+            self.save_jobs_urls()
             self.logger.info("Scraped urls saved to save_urls.txt file")
             return
+
+        # max number of jobs offers to insert in the table
+        MAX_ELEMENTS = 25
+        elements = 0
+
+        if self.verbose:
+            count = 1
+            length = len(self.scraped_urls)
+
+        for url in self.scraped_urls:
+            jobs_data = self.get_jobs_data(url)
+
+            if jobs_data == None and self.verbose:
+                print(f"{count}/{length} : No data")
+
+            if jobs_data == None:
+                count += 1
+                continue
+
+            if self.verbose:
+                print(f"{count}/{length} : {jobs_data[0]}")
+
+            self.scraped_data.append(jobs_data)
+            elements += 1
+            if elements >= MAX_ELEMENTS:
+                # insert the scraped jobs offers in the database
+                if connector.insert_many(self.scraped_data):
+                    self.logger.info(
+                        f"Data inserted successfully ({len(self.scraped_data)} row(s) affected)")
+                    # clear the scraped_data list
+                    self.scraped_data = []
+                    # reset the elements counter
+                    elements = 0
+                else:
+                    self.logger.error(
+                        "Data inserted failed, try again next iteration")
+            count += 1
+            chill(2)
+
+        # if scraped_data list is not empty
+        if self.scraped_data:
+            # insert the scraped jobs offers in the database
+            if connector.insert_many(self.scraped_data):
+                self.logger.info(
+                    f"Data inserted successfully ({len(self.scraped_data)} row(s) affected)")
+            else:
+                self.logger.error("Data inserted failed")
+
+        # close connection
+        connector.close()
