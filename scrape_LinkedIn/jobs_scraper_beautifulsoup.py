@@ -93,6 +93,10 @@ class JobsScraperBeautifulSoup:
 
         if soup == None:
             return None
+        # if the jobs offer is not found from database
+        if soup.find('div', class_='not-found-404'):
+            self.logger.info(f"Page not found for this url: {url}")
+            return None
 
         title = soup.find('h1', class_='top-card-layout__title')
         if title != None:
@@ -100,7 +104,7 @@ class JobsScraperBeautifulSoup:
 
         description = soup.find('div', class_='show-more-less-html__markup')
         if description != None:
-            description = description.get_text(strip=True)
+            description = description.get_text()
         else:
             self.logger.info(f"No description found for this url: {url}")
 

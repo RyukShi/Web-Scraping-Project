@@ -15,6 +15,9 @@ SET time_zone = "+2:00";
 -- Base de données : `web_scraping_project`
 --
 
+CREATE DATABASE IF NOT EXISTS `web_scraping_project` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+USE `web_scraping_project`;
+
 -- --------------------------------------------------------
 
 --
