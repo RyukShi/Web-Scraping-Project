@@ -1,12 +1,14 @@
-from constant import COUNTRIES
 from requests import get
 from os import getcwd
 from bs4 import BeautifulSoup
 from random import random
-from utils import chill, join_path, is_exists, get_size
 from urllib.parse import urlencode, quote
 from json import dumps
+
+# import functions, classes and constant
+from utils import chill, join_path, is_valid_file
 from my_logger import MyLogger
+from constant import COUNTRIES
 from my_connector import MyConnector
 
 
@@ -26,9 +28,9 @@ class JobsScraperBeautifulSoup:
         self.SAVE_URLS_PATH_FILE = join_path(
             self.PATH, 'data', 'save_urls.txt')
 
-        self.scraped_data = []
+        self.scraped_jobs = []
         self.scraped_urls = []
-        self.missed_data = []
+        self.missed_countries = []
 
         self.logger = MyLogger(
             log_file=join_path(self.PATH, "logs",
@@ -36,19 +38,22 @@ class JobsScraperBeautifulSoup:
             log_name="JobsScraperBeautifulSoup",
         )
 
-    def is_valid_file(self) -> bool:
-        return is_exists(self.SAVE_URLS_PATH_FILE) and get_size(self.SAVE_URLS_PATH_FILE) > 0
-
     def run(self):
         """ Run the scraper """
         self.logger.info("Start scraping")
 
-        if (self.is_valid_file()):
+        if (is_valid_file(self.SAVE_URLS_PATH_FILE)):
             self.load_jobs_urls()
             self.logger.info("Jobs url loaded from save_urls.txt file")
         else:
-            self.scraping_jobs_url()
+            self.scraping_jobs_url(self.COUNTRIES)
+            if self.missed_countries:
+                self.logger.info(
+                    f"{len(self.missed_countries)} countries missed, try again to get urls")
+                # try again to get the missed countries jobs url
+                self.scraping_jobs_url(self.missed_countries)
         self.scraping_jobs_data()
+
         self.logger.info("Scraping done")
 
     def load_jobs_urls(self):
@@ -77,15 +82,20 @@ class JobsScraperBeautifulSoup:
         soup = self.get_soup(url)
 
         if soup == None:
+            self.logger.error(f"Failed to get soup object for this url: {url}")
             return None
 
-        links = []
         results_list = soup.find('ul', class_='jobs-search__results-list')
-        a_tags = results_list.find_all(
-            'a', class_='base-card__full-link', href=True)
-        for a_tag in a_tags:
-            links.append(a_tag['href'])
-        return links
+        if results_list:
+            links = []
+            a_tags = results_list.find_all(
+                'a', class_='base-card__full-link', href=True)
+            for a_tag in a_tags:
+                links.append(a_tag['href'])
+            return links
+        else:
+            self.logger.error(f"No links found for this url: {url}")
+            return None
 
     def get_jobs_data(self, url: str) -> tuple:
         # get soup object
@@ -120,35 +130,28 @@ class JobsScraperBeautifulSoup:
         if location != None:
             location = location.get_text(strip=True)
 
-        criteria = {}
         criteria_list = soup.find_all(
             'li', class_='description__job-criteria-item')
         if criteria_list != None:
+            criteria = {}
             for c in criteria_list:
                 key = c.find('h3')
                 value = c.find('span')
                 if key and value:
                     criteria[key.get_text(strip=True)] = value.get_text(
                         strip=True)
-
-        posted_at = soup.find(
-            'span', class_='posted-time-ago__text topcard__flavor--metadata')
-        if posted_at != None:
-            posted_at = posted_at.get_text(strip=True)
-
         return (
             title, description, company_name,
-            company_url, location, dumps(criteria),
-            url, posted_at
+            company_url, location, dumps(criteria), url
         )
 
-    def scraping_jobs_url(self):
+    def scraping_jobs_url(self, countries: list):
         if self.verbose:
             count = 1
-            length = len(self.COUNTRIES)
+            length = len(countries)
 
         # for loop with random shuffle
-        for country in sorted(self.COUNTRIES, key=lambda _: random()):
+        for country in sorted(countries, key=lambda _: random()):
             if self.verbose:
                 print(f"{count}/{length} : {country}")
 
@@ -159,8 +162,7 @@ class JobsScraperBeautifulSoup:
             jobs_url = self.get_jobs_url(search_url)
 
             if jobs_url == None:
-                self.logger.error(f"Failed to get soup object for {country}")
-                self.missed_data.append(country)
+                self.missed_countries.append(country)
                 count += 1
                 continue
 
@@ -170,9 +172,6 @@ class JobsScraperBeautifulSoup:
 
             count += 1
             chill(3)
-
-        if len(self.missed_data) > 0:
-            self.logger.info(f"{len(self.missed_data)} countries missed")
 
     def scraping_jobs_data(self):
         connector = MyConnector()
@@ -206,15 +205,15 @@ class JobsScraperBeautifulSoup:
             if self.verbose:
                 print(f"{count}/{length} : {jobs_data[0]}")
 
-            self.scraped_data.append(jobs_data)
+            self.scraped_jobs.append(jobs_data)
             elements += 1
             if elements >= MAX_ELEMENTS:
                 # insert the scraped jobs offers in the database
-                if connector.insert_many(self.scraped_data):
+                if connector.insert_many(self.scraped_jobs):
                     self.logger.info(
-                        f"Data inserted successfully ({len(self.scraped_data)} row(s) affected)")
-                    # clear the scraped_data list
-                    self.scraped_data = []
+                        f"Data inserted successfully ({len(self.scraped_jobs)} row(s) affected)")
+                    # clear the scraped_jobs list
+                    self.scraped_jobs = []
                     # reset the elements counter
                     elements = 0
                 else:
@@ -223,12 +222,12 @@ class JobsScraperBeautifulSoup:
             count += 1
             chill(2)
 
-        # if scraped_data list is not empty
-        if self.scraped_data:
+        # if scraped_jobs list is not empty
+        if self.scraped_jobs:
             # insert the scraped jobs offers in the database
-            if connector.insert_many(self.scraped_data):
+            if connector.insert_many(self.scraped_jobs):
                 self.logger.info(
-                    f"Data inserted successfully ({len(self.scraped_data)} row(s) affected)")
+                    f"Data inserted successfully ({len(self.scraped_jobs)} row(s) affected)")
             else:
                 self.logger.error("Data inserted failed")
 

@@ -22,3 +22,7 @@ def is_exists(path: str) -> bool:
 def get_size(path: str) -> int:
     """ Return the size of a file """
     return os.path.getsize(path)
+
+
+def is_valid_file(path: str) -> bool:
+    return is_exists(path) and get_size(path) > 0

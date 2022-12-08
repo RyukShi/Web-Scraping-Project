@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1:3306
--- Généré le : ven. 02 déc. 2022 à 11:37
+-- Généré le : mar. 06 déc. 2022 à 18:55
 -- Version du serveur : 5.7.36
 -- Version de PHP : 7.4.26
 
@@ -14,8 +14,7 @@ SET time_zone = "+2:00";
 --
 -- Base de données : `web_scraping_project`
 --
-
-CREATE DATABASE IF NOT EXISTS `web_scraping_project` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+CREATE DATABASE IF NOT EXISTS `web_scraping_project` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `web_scraping_project`;
 
 -- --------------------------------------------------------
@@ -27,15 +26,15 @@ USE `web_scraping_project`;
 DROP TABLE IF EXISTS `jobs_offers`;
 CREATE TABLE IF NOT EXISTS `jobs_offers` (
   `jobs_offer_id` int(11) NOT NULL AUTO_INCREMENT,
-  `title` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL,
-  `description` text CHARACTER SET utf8mb4,
+  `title` varchar(255) DEFAULT NULL,
+  `description` text,
   `location` varchar(255) DEFAULT NULL,
-  `jobs_offer_url` varchar(500) NOT NULL,
+  `jobs_offer_url` varchar(600) NOT NULL,
   `company_name` varchar(255) DEFAULT NULL,
-  `company_url` varchar(500) DEFAULT NULL,
-  `posted_at` varchar(255) DEFAULT NULL,
+  `company_url` varchar(600) DEFAULT NULL,
   `criteria` json DEFAULT NULL,
   `date_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `technologies` json DEFAULT NULL,
   PRIMARY KEY (`jobs_offer_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 COMMIT;
