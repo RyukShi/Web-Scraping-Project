@@ -133,8 +133,6 @@ class JobsScraperBeautifulSoup:
             'span', class_='topcard__flavor topcard__flavor--bullet')
         if location != None:
             location = location.get_text(strip=True)
-            if country.casefold() not in location.casefold():
-                location += country
 
         criteria_list = soup.find_all(
             'li', class_='description__job-criteria-item')
@@ -154,7 +152,7 @@ class JobsScraperBeautifulSoup:
         return JobOffer(
             title=title, description=description, job_offer_url=url,
             company_name=company_name, company_url=company_url,
-            criteria=criteria, location=location
+            criteria=criteria, location=location, country=country
         )
 
     def scraping_jobs_url(self, countries: list):

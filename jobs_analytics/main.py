@@ -5,8 +5,8 @@ def main():
     analytics = JobsAnalytics(verbose=True)
     analytics.tech_analysis_process(readjust=False)
     params = {
-        "technologies": ['Symfony'],
-        "location": 'France'
+        "technologies": ['React', 'TypeScript'],
+        "location": 'Paris'
     }
     job_offers = analytics.search_process(params)
     if job_offers:

@@ -11,7 +11,8 @@ class JobOffer():
         company_name: str = None,
         company_url: str = None,
         location: str = None,
-        criteria: dict = None
+        criteria: dict = None,
+        country: str = None
     ):
         self.title = title
         self.job_offer_url = job_offer_url
@@ -20,6 +21,7 @@ class JobOffer():
         self.company_url = company_url
         self.location = location
         self.criteria = criteria
+        self.country = country
 
     def to_tuple(self) -> tuple:
         """ Return a tuple of the data to insert in the database """
@@ -31,7 +33,8 @@ class JobOffer():
             self.location,
             # convert criteria dict to json string
             dumps(self.criteria),
-            self.job_offer_url
+            self.job_offer_url,
+            self.country
         )
 
     def __str__(self) -> str:

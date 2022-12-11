@@ -25,16 +25,17 @@ USE `web_scraping_project`;
 
 DROP TABLE IF EXISTS `jobs_offers`;
 CREATE TABLE IF NOT EXISTS `jobs_offers` (
-  `jobs_offer_id` int(11) NOT NULL AUTO_INCREMENT,
+  `job_offer_id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) DEFAULT NULL,
   `description` text,
   `location` varchar(255) DEFAULT NULL,
-  `jobs_offer_url` varchar(600) NOT NULL,
+  `country` varchar(255) DEFAULT NULL,
+  `job_offer_url` varchar(600) NOT NULL,
   `company_name` varchar(255) DEFAULT NULL,
   `company_url` varchar(600) DEFAULT NULL,
   `criteria` json DEFAULT NULL,
   `date_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `technologies` json DEFAULT NULL,
-  PRIMARY KEY (`jobs_offer_id`)
+  PRIMARY KEY (`job_offer_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 COMMIT;

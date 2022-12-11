@@ -48,8 +48,8 @@ class MyConnector:
                 insert_request = """
                 INSERT INTO jobs_offers (title, description, company_name,
                                         company_url, location, criteria,
-                                        job_offer_url)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                                        job_offer_url, country)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """
             # create cursor
             cursor = self.connection.cursor()

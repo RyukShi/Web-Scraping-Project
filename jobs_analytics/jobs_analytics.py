@@ -67,7 +67,8 @@ class JobsAnalytics():
                     "Unable to run the process cause the database connection has not been established")
             return None
         q1 = """
-            SELECT job_offer_id, location, technologies, company_name, company_url 
+            SELECT job_offer_id, location, technologies, company_name, 
+            company_url, country 
             FROM jobs_offers 
             WHERE JSON_CONTAINS(technologies, %s)
         """
@@ -80,6 +81,9 @@ class JobsAnalytics():
                 if params.__contains__("company_name"):
                     q1 += " AND company_name LIKE %s"
                     params_tuple += ("%{0}%".format(params["company_name"]),)
+                if params.__contains__("country"):
+                    q1 += " AND country LIKE %s"
+                    params_tuple += ("%{0}%".format(params["country"]),)
             q1 += ";"
             return self.connector.execute_query(q1, params_tuple)
         else:
