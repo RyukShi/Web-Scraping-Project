@@ -3,13 +3,13 @@ from os import getcwd
 from bs4 import BeautifulSoup
 from random import random
 from urllib.parse import urlencode, quote
-from json import dumps
 
 # import functions, classes and constant
-from utils import chill, join_path, is_valid_file
+from utils import chill, join_path, is_valid_file, serialize_data, deserialize_data, get_size
 from my_logger import MyLogger
 from constant import COUNTRIES
 from my_connector import MyConnector
+from job_offer import JobOffer
 
 
 class JobsScraperBeautifulSoup:
@@ -26,11 +26,12 @@ class JobsScraperBeautifulSoup:
         # get the current working directory
         self.PATH = getcwd()
         self.SAVE_URLS_PATH_FILE = join_path(
-            self.PATH, 'data', 'save_urls.txt')
+            self.PATH, 'data', 'save_urls.json')
 
         self.scraped_jobs = []
-        self.scraped_urls = []
+        self.scraped_urls = {}
         self.missed_countries = []
+        self.missed_jobs = {}
 
         self.logger = MyLogger(
             log_file=join_path(self.PATH, "logs",
@@ -43,8 +44,10 @@ class JobsScraperBeautifulSoup:
         self.logger.info("Start scraping")
 
         if (is_valid_file(self.SAVE_URLS_PATH_FILE)):
-            self.load_jobs_urls()
-            self.logger.info("Jobs url loaded from save_urls.txt file")
+            data = deserialize_data(self.SAVE_URLS_PATH_FILE)
+            if data != None:
+                self.scraped_urls = data
+                self.logger.info("Jobs url loaded from save_urls.json file")
         else:
             self.scraping_jobs_url(self.COUNTRIES)
             if self.missed_countries:
@@ -52,20 +55,15 @@ class JobsScraperBeautifulSoup:
                     f"{len(self.missed_countries)} countries missed, try again to get urls")
                 # try again to get the missed countries jobs url
                 self.scraping_jobs_url(self.missed_countries)
-        self.scraping_jobs_data()
+
+        self.scraping_jobs_data(self.scraped_urls)
+        if self.missed_jobs:
+            self.logger.info(
+                "There are jobs missed, try again to get jobs data")
+            # try again to get the missed jobs data
+            self.scraping_jobs_data(self.missed_jobs)
 
         self.logger.info("Scraping done")
-
-    def load_jobs_urls(self):
-        with open(self.SAVE_URLS_PATH_FILE, 'r', encoding='utf-8') as txt_file:
-            urls = txt_file.readlines()
-            for url in urls:
-                self.scraped_urls.append(url.strip("\n"))
-
-    def save_jobs_urls(self):
-        with open(self.SAVE_URLS_PATH_FILE, 'w', encoding='utf-8') as txt_file:
-            for url in self.scraped_urls:
-                txt_file.write(url + "\n")
 
     def get_soup(self, url: str) -> BeautifulSoup:
         """ Get the soup object from url """
@@ -76,13 +74,17 @@ class JobsScraperBeautifulSoup:
             self.logger.error(f"Error : {e}")
             return None
 
-    def get_jobs_url(self, url: str) -> list:
-        """ Gets the first 25 jobs at most from search url """
+    def get_jobs_url(self, country: str) -> list:
+        """ Gets the first 25 jobs at most based on country """
+        params = {'keywords': self.keywords,
+                  'location': country, 'f_TPR': 'r86400'}
+        # generate search url based on params
+        search_url = self.BASE_URL + urlencode(params, quote_via=quote)
         # get soup object
-        soup = self.get_soup(url)
+        soup = self.get_soup(search_url)
 
         if soup == None:
-            self.logger.error(f"Failed to get soup object for this url: {url}")
+            self.logger.error(f"Failed to get soup object for {country}")
             return None
 
         results_list = soup.find('ul', class_='jobs-search__results-list')
@@ -94,10 +96,10 @@ class JobsScraperBeautifulSoup:
                 links.append(a_tag['href'])
             return links
         else:
-            self.logger.error(f"No links found for this url: {url}")
+            self.logger.error(f"No links found for {country}")
             return None
 
-    def get_jobs_data(self, url: str) -> tuple:
+    def get_job_data(self, url: str, country: str) -> JobOffer:
         # get soup object
         soup = self.get_soup(url)
 
@@ -117,6 +119,8 @@ class JobsScraperBeautifulSoup:
             description = description.get_text()
         else:
             self.logger.info(f"No description found for this url: {url}")
+            # if description is None, the analysis process cannot be done
+            return None
 
         company_name = soup.find(
             'a', class_='topcard__org-name-link', href=True)
@@ -129,6 +133,8 @@ class JobsScraperBeautifulSoup:
             'span', class_='topcard__flavor topcard__flavor--bullet')
         if location != None:
             location = location.get_text(strip=True)
+            if country.casefold() not in location.casefold():
+                location += country
 
         criteria_list = soup.find_all(
             'li', class_='description__job-criteria-item')
@@ -140,9 +146,15 @@ class JobsScraperBeautifulSoup:
                 if key and value:
                     criteria[key.get_text(strip=True)] = value.get_text(
                         strip=True)
-        return (
-            title, description, company_name,
-            company_url, location, dumps(criteria), url
+
+        if title == description == company_url == company_name == criteria == location:
+            # if all the variables are equal, it means that they are all equal to None
+            return None
+
+        return JobOffer(
+            title=title, description=description, job_offer_url=url,
+            company_name=company_name, company_url=company_url,
+            criteria=criteria, location=location
         )
 
     def scraping_jobs_url(self, countries: list):
@@ -155,11 +167,7 @@ class JobsScraperBeautifulSoup:
             if self.verbose:
                 print(f"{count}/{length} : {country}")
 
-            params = {'keywords': self.keywords,
-                      'location': country, 'f_TPR': 'r86400'}
-            search_url = self.BASE_URL + urlencode(params, quote_via=quote)
-            # get jobs's url based on params
-            jobs_url = self.get_jobs_url(search_url)
+            jobs_url = self.get_jobs_url(country)
 
             if jobs_url == None:
                 self.missed_countries.append(country)
@@ -167,69 +175,64 @@ class JobsScraperBeautifulSoup:
                 continue
 
             self.logger.info(f"{len(jobs_url)} jobs found for {country}")
-
-            self.scraped_urls.extend(jobs_url)
-
+            # append country urls into scraped_urls
+            self.scraped_urls[country] = jobs_url
             count += 1
-            chill(3)
+            chill(2)
 
-    def scraping_jobs_data(self):
+    def scraping_jobs_data(self, jobs_url: dict):
         connector = MyConnector()
 
         # try to connect to the database
         if not connector.connect_to_db():
             self.logger.error("Can't connect to the database")
-            # save the jobs url in save_urls.txt file
-            self.save_jobs_urls()
-            self.logger.info("Scraped urls saved to save_urls.txt file")
+            # if the file is not empty it has been loaded previously,
+            # so it's not necessary to save the urls
+            if not get_size(self.SAVE_URLS_PATH_FILE) > 0:
+                # save the jobs url in save_urls.json file
+                success = serialize_data(
+                    self.SAVE_URLS_PATH_FILE, self.scraped_urls)
+                if success:
+                    self.logger.info(
+                        "Scraped urls saved to save_urls.json file")
             return
 
-        # max number of jobs offers to insert in the table
-        MAX_ELEMENTS = 25
-        elements = 0
-
-        if self.verbose:
-            count = 1
-            length = len(self.scraped_urls)
-
-        for url in self.scraped_urls:
-            jobs_data = self.get_jobs_data(url)
-
-            if jobs_data == None and self.verbose:
-                print(f"{count}/{length} : No data")
-
-            if jobs_data == None:
-                count += 1
-                continue
-
+        for country, urls in jobs_url.items():
             if self.verbose:
-                print(f"{count}/{length} : {jobs_data[0]}")
+                count = 1
+                length = len(urls)
+                print(f"{length} job offers for {country}")
+            missed_jobs_temp = []
+            for url in urls:
+                job_data = self.get_job_data(url, country)
 
-            self.scraped_jobs.append(jobs_data)
-            elements += 1
-            if elements >= MAX_ELEMENTS:
-                # insert the scraped jobs offers in the database
-                if connector.insert_many(self.scraped_jobs):
-                    self.logger.info(
-                        f"Data inserted successfully ({len(self.scraped_jobs)} row(s) affected)")
-                    # clear the scraped_jobs list
-                    self.scraped_jobs = []
-                    # reset the elements counter
-                    elements = 0
-                else:
-                    self.logger.error(
-                        "Data inserted failed, try again next iteration")
-            count += 1
-            chill(2)
+                if job_data == None:
+                    if self.verbose:
+                        print(f"{count}/{length} : No data")
+                    missed_jobs_temp.append(url)
+                    count += 1
+                    continue
 
-        # if scraped_jobs list is not empty
-        if self.scraped_jobs:
-            # insert the scraped jobs offers in the database
-            if connector.insert_many(self.scraped_jobs):
-                self.logger.info(
-                    f"Data inserted successfully ({len(self.scraped_jobs)} row(s) affected)")
+                if self.verbose:
+                    print(f"{count}/{length} : {job_data}")
+
+                self.scraped_jobs.append(job_data)
+
+                count += 1
+                chill(2)
+
+            # insert the scraped job offers in the database
+            success_insert = connector.insert_many(self.scraped_jobs)
+            if success_insert:
+                self.logger.info(f"Data inserted successfully for {country}")
             else:
-                self.logger.error("Data inserted failed")
+                self.logger.info(f"Data inserted failed for {country}")
+            # if missed_jobs_temp is not empty
+            if missed_jobs_temp:
+                # save the missed jobs for specific country
+                self.missed_jobs[country] = missed_jobs_temp
+            # clear the scraped_jobs list
+            self.scraped_jobs = []
 
         # close connection
         connector.close()

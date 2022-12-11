@@ -2,6 +2,7 @@ import os
 
 from time import sleep
 from random import uniform
+from json import dump, load
 
 
 def chill(mult: float = 1.0):
@@ -26,3 +27,24 @@ def get_size(path: str) -> int:
 
 def is_valid_file(path: str) -> bool:
     return is_exists(path) and get_size(path) > 0
+
+
+def deserialize_data(path: str):
+    """ Deserialize json data from file """
+    with open(path, 'r', encoding='utf-8') as file:
+        try:
+            return load(file)
+        except ValueError as e:
+            print(f"Failed to load json data from file, Error: {e}")
+            return None
+
+
+def serialize_data(path: str, data: dict) -> bool:
+    """ Serialize python dict to json format into a file """
+    with open(path, 'w', encoding='utf-8') as file:
+        try:
+            dump(data, file, indent=4)
+            return True
+        except ValueError as e:
+            print(f"Failed to dump data into file, Error: {e}")
+            return False

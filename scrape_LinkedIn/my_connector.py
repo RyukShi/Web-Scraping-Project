@@ -40,22 +40,26 @@ class MyConnector:
             self.connection.close()
             print("Connection closed")
 
-    def insert_many(self, data: list) -> bool:
-        """ Insert many data in jobs table """
-        if self.connection:
-            insert_request = """
-            INSERT INTO jobs_offers (title, description, company_name,
-                                    company_url, location, criteria,
-                                    jobs_offer_url)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """
+    def insert_many(self, obj_data: list) -> bool:
+        """ Insert data in specific SQL table """
+        if self.connection and obj_data:
+            obj_type = type(obj_data[0]).__name__
+            if obj_type == 'JobOffer':
+                insert_request = """
+                INSERT INTO jobs_offers (title, description, company_name,
+                                        company_url, location, criteria,
+                                        job_offer_url)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """
             # create cursor
             cursor = self.connection.cursor()
             try:
                 # insert data
-                cursor.executemany(insert_request, data)
+                cursor.executemany(
+                    insert_request, [obj.to_tuple() for obj in obj_data])
                 # commit the changes
                 self.connection.commit()
+                print(f"{cursor.rowcount} row(s) inserted")
                 return True
             except Error as err:
                 print(f"Error : {err}")
