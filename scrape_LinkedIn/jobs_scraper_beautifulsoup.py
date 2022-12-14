@@ -55,13 +55,15 @@ class JobsScraperBeautifulSoup:
                     f"{len(self.missed_countries)} countries missed, try again to get urls")
                 # try again to get the missed countries jobs url
                 self.scraping_jobs_url(self.missed_countries)
-
-        self.scraping_jobs_data(self.scraped_urls)
-        if self.missed_jobs:
-            self.logger.info(
-                "There are jobs missed, try again to get jobs data")
-            # try again to get the missed jobs data
-            self.scraping_jobs_data(self.missed_jobs)
+        if self.scraped_urls:
+            self.scraping_jobs_data(self.scraped_urls)
+            if self.missed_jobs:
+                self.logger.info(
+                    "There are jobs missed, try again to get jobs data")
+                # try again to get the missed jobs data
+                self.scraping_jobs_data(self.missed_jobs)
+        else:
+            self.logger.info("No links found, scraping jobs process aborted")
 
         self.logger.info("Scraping done")
 

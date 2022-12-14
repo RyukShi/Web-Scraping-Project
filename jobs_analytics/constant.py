@@ -13,9 +13,9 @@ TECHNOLOGIES = [
     # PHP Frameworks
     'Symfony', 'Laravel', 'CodeIgniter', 'CakePHP', 'Yii', 'Laminas', 'Phalcon', 'Fat-Free', 'Lumen', 'Slim', 'Flight', 'PHPixie',
     # JavaSript Frameworks
-    'Vue.js', 'Ext JS', 'Angular', 'React', 'Ember.js', 'Svelte', 'Meteor', 'Mithril.js', 'Backbone.js', 'Polymer.js', 'Node.js', 'Aurelia', 'Nuxt.js',
+    'Vue.js', 'Ext', 'Angular', 'React', 'Ember.js', 'Svelte', 'Meteor', 'Mithril.js', 'Backbone.js', 'Polymer.js', 'Node.js', 'Aurelia', 'Nuxt.js',
     # Main tech
-    'C++', 'C#', 'F#', 'Java', 'Python', 'Ruby', 'Rust', 'TypeScript', 'PHP', 'Sass', 'XML', 'XHTML', 'XAML', 'XSLT',
+    'C++', 'C#', 'F#', 'Java', 'Python', 'Ruby', 'Rust', 'TypeScript', 'PHP', 'SCSS', 'XML', 'XHTML', 'XAML', 'XSLT', 'Kotlin',
     # Java Frameworks
     'Struts', 'Spark', 'Hibernate', 'JavaServer Faces', 'Spring', 'Dropwizard', 'Vaadin', 'Grails', 'Hadoop',
     # Gestion de projet
@@ -28,8 +28,10 @@ TECHNOLOGIES = [
     'PHPUnit', 'Selenium', 'Puppeteer', 'Junit', 'NUnit', 'JMockit', 'EMMA', 'Jest', 'AVA', 'Mocha', 'Jasmine', 'Cypress',
     # Others
     '.NET', 'RabbitMQ', 'NgRx',
+    # App Container
+    'Docker', 'Kubernetes',
     # JS libraries
-    'RxJS', 'Redux', 'jQuery',
+    'RxJS', 'Redux', 'jQuery', 'Grunt', 'Gulp',
     # Cloud computing
-    'Google Cloud Platform'
+    'Google Cloud Platform', 'AWS', 'Azure'
 ]
