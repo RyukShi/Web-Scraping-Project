@@ -17,12 +17,16 @@ class JobsScraperBeautifulSoup:
     def __init__(
         self,
         base_url: str = "https://www.linkedin.com/jobs/search?",
-        verbose: bool = False
+        verbose: bool = False,
+        specific_countries: list = None
     ):
         self.BASE_URL = base_url
         self.verbose = verbose
         self.keywords = 'Web Development'
-        self.COUNTRIES = COUNTRIES
+        if not specific_countries:
+            self.COUNTRIES = COUNTRIES
+        else:
+            self.COUNTRIES = specific_countries
         # get the current working directory
         self.PATH = getcwd()
         self.SAVE_URLS_PATH_FILE = join_path(

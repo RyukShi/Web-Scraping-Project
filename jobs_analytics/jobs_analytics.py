@@ -47,9 +47,13 @@ class JobsAnalytics():
             for j in job_offers:
                 # get elements of tuple to get job's description and id
                 d, id = j
-                t = [tech for tech in TECHNOLOGIES if search(
-                    fr"(?!\B\w){escape(tech)}(?<!\w\B)", d, IGNORECASE)]
-                params_tuple = (dumps(t), id)
+                process_dict = {}
+                for category, technologies in TECHNOLOGIES.items():
+                    t = [tech for tech in technologies if search(
+                        fr"(?!\B\w){escape(tech)}(?<!\w\B)", d, IGNORECASE)]
+                    if t:
+                        process_dict[category] = t
+                params_tuple = (dumps(process_dict), id)
                 self.connector.update_query(q2, params_tuple)
 
             if self.verbose:

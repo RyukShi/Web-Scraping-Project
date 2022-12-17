@@ -5,8 +5,11 @@ def main():
     analytics = JobsAnalytics(verbose=True)
     analytics.tech_analysis_process(readjust=False)
     params = {
-        "technologies": ['React', 'TypeScript'],
-        "location": 'Paris'
+        "technologies": {
+            "JavaScript Frameworks": ["React"],
+            "Main tech": ["Ruby", "TypeScript"]
+        },
+        "country": 'FRANCE'
     }
     job_offers = analytics.search_process(params)
     if job_offers:
