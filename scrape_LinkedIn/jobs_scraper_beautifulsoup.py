@@ -18,11 +18,12 @@ class JobsScraperBeautifulSoup:
         self,
         base_url: str = "https://www.linkedin.com/jobs/search?",
         verbose: bool = False,
-        specific_countries: list = None
+        specific_countries: list = None,
+        keywords: str = 'Web Development'
     ):
         self.BASE_URL = base_url
         self.verbose = verbose
-        self.keywords = 'Web Development'
+        self.keywords = keywords
         if not specific_countries:
             self.COUNTRIES = COUNTRIES
         else:
