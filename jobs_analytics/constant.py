@@ -1,32 +1,34 @@
 TECHNOLOGIES = {
     "Python Frameworks": [
         'Django', 'Flask', 'TurboGears', 'Falcon', 'CherryPy', 'Pyramid',
-        'Grok', 'Web2Py', 'Bottle', 'Tornado', 'BlueBream', 'Hug'
+        'Grok', 'Web2Py', 'Bottle', 'Tornado', 'BlueBream', 'Hug', 'Sanic',
+        'FastAPI', 'Starlette'
     ],
     "PHP Frameworks": [
         'Symfony', 'Laravel', 'CodeIgniter', 'CakePHP', 'Yii', 'Laminas',
-        'Phalcon', 'Fat-Free', 'Lumen', 'Slim', 'Flight', 'PHPixie'
+        'Phalcon', 'Fat-Free', 'Lumen', 'Slim', 'Flight', 'PHPixie',
+        'FuelPHP', 'Zend'
     ],
     "JavaScript Frameworks": [
         'Vue.js', 'Ext', 'Angular', 'React', 'Ember.js', 'Svelte',
-        'Meteor', 'Mithril.js', 'Backbone.js', 'Polymer.js', 'Node.js',
-        'Aurelia', 'Nuxt.js'
+        'Meteor', 'Mithril.js', 'Backbone.js', 'Express.js',
+        'Aurelia', 'Nuxt.js', 'Nest.js', 'Next.js'
     ],
     "Main tech": [
         'C++', 'C#', 'F#', 'Java', 'Python', 'Ruby', 'Rust', 'TypeScript',
-        'PHP', 'SCSS', 'XML', 'XHTML', 'XAML', 'XSLT', 'XQuery', 'Kotlin',
-        'Scala'
+        'PHP', 'SCSS', 'XML', 'XHTML', 'XAML', 'Kotlin', 'Scala', 'Swift',
+        'Objective-C', 'Visual Basic'
     ],
     "Java Frameworks": [
-        'Struts', 'Spark', 'Hibernate', 'JavaServer Faces', 'Spring',
-        'Dropwizard', 'Vaadin', 'Grails', 'Hadoop'
+        'Struts', 'Hibernate', 'JavaServer Faces', 'Spring', 'Dropwizard',
+        'Vaadin', 'Grails'
     ],
     # Gestion de projet in French
     "Project management": [
-        'Jira', 'Atlassian', 'Git', 'GitHub', 'GitLab', 'Trello'
+        'Jira', 'Trello', 'Asana', 'Basecamp', 'Monday.com', 'Slack'
     ],
     # Services d'hébergement in French
-    "Hosting Services": [
+    "Hosting services": [
         'Firebase', 'Supabase'
     ],
     # SGBD in French
@@ -37,21 +39,28 @@ TECHNOLOGIES = {
     # Unit Tests & UI Tests
     "Tests": [
         'PHPUnit', 'Selenium', 'Puppeteer', 'Junit', 'NUnit', 'JMockit',
-        'EMMA', 'Jest', 'AVA', 'Mocha', 'Jasmine', 'Cypress'
+        'Jest', 'AVA', 'Mocha', 'Jasmine', 'Cypress', 'SonarQube',
+        'Vitest'
     ],
-    "Others": [
-        '.NET', 'RabbitMQ', 'NgRx', 'Ruby on Rails'
+    "Other Frameworks": [
+        '.NET', 'Ruby on Rails'
     ],
-    "App Container": [
+    "App container": [
         'Docker', 'Kubernetes'
     ],
-    "Js libraries": [
-        'RxJS', 'Redux', 'jQuery', 'Grunt', 'Gulp'
-    ],
     "Cloud computing": [
-        'Google Cloud', 'AWS', 'Azure', 'Alibaba Cloud'
+        'Google Cloud', 'AWS', 'Azure', 'Alibaba Cloud', 'IBM Cloud',
+        'Oracle Cloud', 'OpenStack', 'Salesforce', 'Rackspace'
     ],
-    "OS": [
-        'Linux', 'Windows', 'macOS'
+    "CMS": [
+        'WordPress', 'Joomla', 'Drupal', 'Magento', 'Shopify', 'Wix',
+        'Squarespace', 'Weebly', 'Ghost'
+    ],
+    "Bundlers": [
+        'Vite', 'Webpack', 'Rollup', 'Parcel', 'esbuild', 'Browserify',
+        'Snowpack'
+    ],
+    "Task runners": [
+        'Gulp', 'Grunt'
     ]
 }
