@@ -157,9 +157,9 @@ class JobsScraperBeautifulSoup:
             return None
 
         return JobOffer(
-            title=title, description=description, job_offer_url=url,
-            company_name=company_name, company_url=company_url,
-            criteria=criteria, location=location, country=country
+            title=title, description=description, company_name=company_name,
+            company_url=company_url, location=location, criteria=criteria,
+            country=country, jobboard='LinkedIn'
         )
 
     def scraping_jobs_url(self, countries: list):

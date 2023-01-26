@@ -48,7 +48,7 @@ class MyConnector:
                 insert_request = """
                 INSERT INTO jobs_offers (title, description, company_name,
                                         company_url, location, criteria,
-                                        job_offer_url, country)
+                                        country, jobboard)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """
             # create cursor

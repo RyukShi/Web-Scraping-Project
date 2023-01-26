@@ -30,12 +30,12 @@ CREATE TABLE IF NOT EXISTS `jobs_offers` (
   `description` text,
   `location` varchar(255) DEFAULT NULL,
   `country` varchar(255) DEFAULT NULL,
-  `job_offer_url` varchar(800) NOT NULL,
   `company_name` varchar(255) DEFAULT NULL,
   `company_url` varchar(800) DEFAULT NULL,
   `criteria` json DEFAULT NULL,
   `date_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `technologies` json DEFAULT NULL,
+  `jobboard` varchar(255) NOT NULL,
   PRIMARY KEY (`job_offer_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 COMMIT;
