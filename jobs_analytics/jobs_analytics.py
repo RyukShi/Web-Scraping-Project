@@ -94,3 +94,33 @@ class JobsAnalytics():
             if self.verbose:
                 print("It is mandatory to inform the technologies key in the params")
             return None
+
+    def find_duplicates(self, delete: bool = False):
+        if not self.is_connected:
+            if self.verbose:
+                print(
+                    "Unable to run the process cause the database connection has not been established")
+            return None
+        q1 = """
+            SELECT job_offer_id, title, company_name, country, location, technologies, COUNT(*) 
+            FROM jobs_offers 
+            WHERE JSON_EXTRACT(technologies, "$") != "{}" 
+            GROUP BY title, company_name, country, location 
+            HAVING COUNT(*) > 1;
+        """
+        duplicates = self.connector.execute_query(q1)
+
+        if self.verbose:
+            print(f"{len(duplicates)} duplicates found")
+
+        if delete:
+            while duplicates:
+                d = duplicates.pop(0)
+                deleteQuery = """
+                    DELETE FROM jobs_offers
+                    WHERE job_offer_id != %s AND title = %s AND company_name = %s AND country = %s AND
+                    location = %s AND JSON_CONTAINS(technologies, %s);
+                """
+                rowcount = self.connector.update_query(deleteQuery, d[:-1])
+                if self.verbose:
+                    print(f"{rowcount} row(s) deleted")

@@ -17,6 +17,8 @@ def main():
     else:
         print("No data found in the database")
 
+    analytics.find_duplicates(True)
+
 
 if __name__ == '__main__':
     main()

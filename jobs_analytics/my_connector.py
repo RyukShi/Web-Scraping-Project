@@ -81,12 +81,13 @@ class MyConnector:
             finally:
                 cursor.close()
 
-    def update_query(self, q: str, params: tuple):
+    def update_query(self, q: str, params: tuple) -> int:
         if self.connection:
             cursor = self.connection.cursor()
             try:
                 cursor.execute(q, params)
                 self.connection.commit()
+                return cursor.rowcount
             except Error as err:
                 print(f"Error : {err}")
             finally:
